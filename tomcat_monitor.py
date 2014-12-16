@@ -1,32 +1,42 @@
 import requests
 from bs4 import BeautifulSoup
 
-processes_by_context = {}
+
 
 def list_processes(password, username, text_url):
+    '''
+    This function queries the Tomcat Manager for a list of running 
+    Tomcat container processes.
+    returns: a dict whose keys are the contxt paths and whose values are 
+        "running", "session_count", and "display_name"
+    '''
     url = text_url + '/list'
     resp = requests.get(url, auth=(username, password))
-    
-    print('\nlist_processes:')
-    print resp.text
+    resp.raise_for_status()
 
-    # stash process contexts
+    # construct dict of dicts
     processes_by_context = {}
     for line in resp.text.split('\n'):
         if line.startswith('/'):
-            context = line[:line.find(':')]
-            val = {'runinfo': line[line.find(':'):]}
+            segments = line.split(':')
+            # context path as key
+            context = segments[0]
+            # dict of segment name/values
+            val = {}
+            val['running'] = segments[1] and segments[1] == 'running'
+            val['session_count'] = int(segments[2])
+            val['context_path'] = segments[3]
+            # make dict entry
             processes_by_context[context] = val
-    print(processes_by_context)
+    return processes_by_context
 
 
 def server_info(password, username, text_url):
     url = text_url + '/serverinfo'
     resp = requests.get(url, auth=(username, password))
-    #print('\nstatus_code: ' + str(resp.status_code))
-    #print(resp.headers)
-    print('\nserver info:')
-    print resp.text
+    resp.raise_for_status()
+    return resp.text
+
 
 def jndi_resources(password, username, text_url):
     url = text_url + '/resources'
