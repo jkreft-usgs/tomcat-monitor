@@ -1,5 +1,21 @@
 ## Monitoring Tomcat from python: a set of examples and explanations
 
+### Quick start for experienced users
+
+Clone this repo.
+
+If you do not already have them, make sure you have Python 2.6+, requests, BeautifulSoup. You may need to install urlparse.
+
+Determine the servername you want to hit, e.g. "http://big.damnserver.org:8080"
+
+Determine the username and password by inspecting the conf/tomcat-users.xml file and identifying the user account with the "manager-script" role.
+
+From your repo's root directory, at the commandline, enter 
+
+    `python run_monitors.py <servername> <username> <password>`
+
+### Explanations and background
+
 The Tomcat server exposes a number of interfaces for monitoring and control via the [Tomcat Manager](http://tomcat.apache.org/tomcat-7.0-doc/manager-howto.html). In a lot of ways, this is excellent. It permits users with proper authorization to deploy, run, shut down, reload, and restart Tomcat applications. It also provides the ability to monitor a lot of the otherwise difficult-to-access internal statistics of apps running in the Tomcat container, and the container itself.
 
 The Tomcat Manager is a web application that ships with Tomcat. (See the docs for how to configure it for use.) The Tomcat Manager can be used in the following ways:
