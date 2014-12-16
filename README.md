@@ -2,17 +2,21 @@
 
 ### Quick start for experienced users
 
+_Disclaimer: It's normal at a point like this to exhort people to use virtualenv; to fork the repo and clone that; and that sort of thing. Well, I'm not. "We're all adults here", right? This is a quick start. What follows is the bare minimum._
+
 Clone this repo.
 
-If you do not already have them, make sure you have Python 2.6+, requests, BeautifulSoup. You may need to install urlparse.
+If you do not already have them, make sure you have Python 2.6+, [Requests](http://docs.python-requests.org/en/latest/), and [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/) installed.
 
-Determine the servername you want to hit, e.g. "http://big.damnserver.org:8080"
+Determine the servername you want to hit. Formulate it to be complete from protocol to port (if not port 80), e.g. "http://big.damnserver.org:8080"
 
-Determine the username and password by inspecting the conf/tomcat-users.xml file and identifying the user account with the "manager-script" role.
+Determine the username and password by inspecting the target server's conf/tomcat-users.xml file and identifying the user account with the **"manager-script" role.**
 
 From your repo's root directory, at the commandline, enter 
 
     `python run_monitors.py <servername> <username> <password>`
+
+Compare the result to the code. You should be able to grasp what's going on.
 
 ### Explanations and background
 
