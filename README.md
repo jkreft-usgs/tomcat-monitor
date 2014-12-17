@@ -24,7 +24,7 @@ Compare the result to the code. You should be able to grasp what's going on.
 
 Monitoring and control/recovery for Java Servlet Container-based web apps is a problem of nested functionality, logic, and access.
 
-![diagram of nested elements in problem space](/images/monitoring_problem_space.svg)
+![diagram of nested elements in problem space](/images/monitoring_problem_space.png)
 
 At the outermost level is **the server, its OS, its network resources, and usually some kind of external data store.** Most monitoring devices or frameworks can access these pretty well. They can obtain statistics, run diagnostics, and execute recovery measures up to and including hard restarts, depending on permissions and non-extraordinary physical access. We can generally treat this as a solved problem.
 
