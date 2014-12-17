@@ -23,6 +23,7 @@ Compare the result to the code. You should be able to grasp what's going on.
 #### overview: web apps in servlet containers
 
 Monitoring and control/recovery for Java Servlet Container-based web apps is a problem of nested functionality, logic, and access.
+<img src='/images/monitoring_problem_space.svg' alt='diagram of nested elements in problem space'/>
 
 At the outermost level is **the server, its OS, its network resources, and usually some kind of external data store.** Most monitoring devices or frameworks can access these pretty well. They can obtain statistics, run diagnostics, and execute recovery measures up to and including hard restarts, depending on permissions and non-extraordinary physical access. We can generally treat this as a solved problem.
 
@@ -42,7 +43,7 @@ This repo contains examples of, and description of techniques for, handling the 
 
  - It does NOT provide any information that depends on the internal logic of the application.
 
-Is the Tomcat Manager the best tool for the job? Well, no, not in absolute quality and usability. It does have big gaps in its rather rudimentary service interface, if such it can be called. There are better things than Tomcat Manager out there. But, Tomcat is built in, and does not require additional exotica such as JMX agents, so using it doesn't demand going down the rabbit hole.
+Is the Tomcat Manager the best tool for the job? Well, no, not in absolute quality and usability. It does have big gaps in its rather rudimentary service interface, if such it can be called. There are better things than Tomcat Manager out there. But, Tomcat Manager is **built in**, and **100% HTTP**; so it does not require deployment of additional exotica such as JMX agents or additional Tomcat apps (such as the excellent [PSI Probe](https://code.google.com/p/psi-probe/), so using it doesn't demand going down any rabbit holes.
 
 Look. This is intended to provide a _minimal_, and _minimally adequate_, Tomcat monitoring capability - _at minimal cost and effort_. Given those constraints, Tomcat Manager is still best of breed. 
 
