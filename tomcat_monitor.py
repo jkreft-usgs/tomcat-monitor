@@ -77,6 +77,11 @@ def find_named_sibling(tag, desired_name, how_many_tries=5):
             return None
 
 def scrape_table_rows(tbl, filt=None):
+    '''
+    Walks through the rows of a table. If a given row is not eliminated
+    by filter function, the row is converted into a list of string values
+    of the th or td tags in the row.
+    '''
     retrows = []
     rows = tbl.find_all('tr')
     if filt:
@@ -86,6 +91,14 @@ def scrape_table_rows(tbl, filt=None):
     return retrows
 
 def skip_ready_threads(row):
+    '''
+    Filter method: returns True IFF the parameter has a first cell that does
+    not contain the string value "R". Intended to eliminate thread table
+    rows that are in "Ready" state (i.e., not working.)
+    :param row: A beautiful soup tag for an HTML row
+    :returns: False if the parameter is None, has no first cell, or has a 
+        first cell with string value "R"; else True
+    '''
     if row:
         firstcell = row.find(['th', 'td'])
         if firstcell:
@@ -98,15 +111,15 @@ def skip_ready_threads(row):
 
 
 def server_status(status_url, username, password):
-    print('calling ' + status_url)
     resp = requests.get(status_url, auth=(username, password))
-    body = resp.text
-    soup = BeautifulSoup(body)
+    resp.raise_for_status()
 
-    # headers are defined as header name (page content) and filter (function)
+    #scrape the HTML
+    soup = BeautifulSoup(resp.text)
+
+    # html headers are defined as header name (page content) and filter (function)
     header_defs = {'JVM': None, '"http-bio-8080"': skip_ready_threads}
 
-    print
     hdrs = soup.find_all('h1')
     headertables = {}
     for hdr in hdrs:
