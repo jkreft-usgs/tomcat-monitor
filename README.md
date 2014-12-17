@@ -38,11 +38,15 @@ Finally, the **web app hosted by Tomcat** is a Java app that, again, needs to se
 
 This repo contains examples of, and description of techniques for, handling the second and third layers in a non-invasive, low-effort fashion. It works by taking advantage of Tomcat's built-in Manager application:
 
+![Tomcat Manager](/images/tomcat_manager_schematic.png)
+
  - Becuase it's a web app that ships with Tomcat, it works externally without need for additional installation. You only need to have the necessary permissions.
 
  - Because it's internal to the JVM, it can provide a pretty good information set about status, and resource usage, for the JVM at large and Tomcat in particular.
 
  - It does NOT provide any information that depends on the internal logic of the application.
+
+![What Tomcat Manager can see](/images/tomcat_manager_can_see.png)
 
 Is the Tomcat Manager the best tool for the job? Well, no, not in absolute quality and usability. It does have big gaps in its rather rudimentary service interface, if such it can be called. There are better things than Tomcat Manager out there. But, Tomcat Manager is **built in**, and **100% HTTP**; so it does not require deployment of additional exotica such as JMX agents or additional Tomcat apps (such as the excellent [PSI Probe](https://code.google.com/p/psi-probe/)), so using it doesn't demand going down any rabbit holes.
 
