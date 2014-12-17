@@ -24,15 +24,22 @@ Compare the result to the code. You should be able to grasp what's going on.
 
 Monitoring and control/recovery for Java Servlet Container-based web apps is a problem of nested functionality, logic, and access.
 
-![diagram of nested elements in problem space](/images/monitoring_problem_space.png)
 
 At the outermost level is **the server, its OS, its network resources, and usually some kind of external data store.** Most monitoring devices or frameworks can access these pretty well. They can obtain statistics, run diagnostics, and execute recovery measures up to and including hard restarts, depending on permissions and non-extraordinary physical access. We can generally treat this as a solved problem.
 
+![Diagram of outer world: server](/images/outer_world.png)
+
 The second layer in is **the JVM**. This is a bit more problematic; the JVM is, by design, a sandbox with strictly controlled interactions with the host system. JVM statistics, diagnostics, and control are exercised from within the JVM; you need a Java program to run those operations.
+
+![iagram of jvm within server](/images/jvm.png)
 
 The third layer in is the **Tomcat server/servlet container itself.** It is a Java application, which can self-report all kinds of things.
 
+![diagram of tomcat within jvm](/images/tomcat_servlet_container.png)
+
 Finally, the **web app hosted by Tomcat** is a Java app that, again, needs to self-report. Tomcat can give information on the Tomcat-level resources being used by the app, but the application's internal logic is opaque to Tomcat.
+
+![diagram of application](/images/monitoring_problem_space.png)
 
 #### how this works with that: lowest common denominator is damn common.
 
