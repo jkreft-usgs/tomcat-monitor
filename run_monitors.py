@@ -27,12 +27,15 @@ status_url = manager_url + '/status'
 print('Tomcat Manager Status Page URL: ' + status_url)
 
 print
-print(server_info(password, username, text_url))
-#jndi_resources(password, username, text_url)
+#print(server_info(text_url, username, password))
+#print(jndi_resources(text_url, username, password))
 
-proc_dict = list_processes(password, username, text_url)
-for context in proc_dict:
-    print(context)
-    print('\t' + str(proc_dict[context]))
-
-#server_status(password, username, status_url)
+#proc_dict = list_processes(text_url, username, password)
+#for context in sorted(proc_dict):
+    #print(context)
+    #for keyname in ['running', 'session_count']:
+        #print('\t' + keyname + ': ' + str(proc_dict[context][keyname]))
+    
+print
+headertables = server_status(status_url, username, password)
+print(headertables)

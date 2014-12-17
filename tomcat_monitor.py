@@ -2,13 +2,16 @@ import requests
 from bs4 import BeautifulSoup
 
 
-
-def list_processes(password, username, text_url):
+def list_processes(text_url, username, password):
     '''
     This function queries the Tomcat Manager for a list of running 
     Tomcat container processes.
-    returns: a dict whose keys are the contxt paths and whose values are 
-        "running", "session_count", and "display_name"
+    :param:
+    :returns: a dict of process information. Keys are the contxt paths; values 
+        are also dictionaries with uniform keys 'running'(boolean), 
+        'session_count'(int), and 'context_path'(string).
+    :raises: 
+
     '''
     url = text_url + '/list'
     resp = requests.get(url, auth=(username, password))
@@ -31,20 +34,36 @@ def list_processes(password, username, text_url):
     return processes_by_context
 
 
-def server_info(password, username, text_url):
+def server_info(text_url, username, password):
     url = text_url + '/serverinfo'
     resp = requests.get(url, auth=(username, password))
     resp.raise_for_status()
-    return resp.text
+    servinfo = {}
+    lines = resp.text.split('\n')
+    if lines[0].startswith('OK -'):
+        for line in lines[1:]:
+            parts = line.split(':')
+            # lines without one ':' should be ignored
+            if len(parts) > 1:
+                if len(parts) > 2:
+                    # there was an extra colon in the value. 
+                    # Rebuild the value
+                    parts = [parts[0], ':'.join(parts[1:])]
+                servinfo[parts[0]] = parts[1]
+    return servinfo
 
 
-def jndi_resources(password, username, text_url):
+def jndi_resources(text_url, username, password):
     url = text_url + '/resources'
     resp = requests.get(url, auth=(username, password))
-    #print('\nstatus_code: ' + str(resp.status_code))
-    #print(resp.headers)
-    print('\njndi resources:')
-    print resp.text
+    resp.raise_for_status()
+    jndis = resp.text.split('\n')
+    if jndis[0].startswith('OK -'):
+        if len(jndis) == 1:
+            return []
+        else:
+            return jndis[1:]
+
 
 def find_named_sibling(tag, desired_name, how_many_tries=5):
     sib = tag
@@ -57,7 +76,7 @@ def find_named_sibling(tag, desired_name, how_many_tries=5):
             print('Out of siblings at ' + str(indx) + '. wtf.')
             return None
 
-def scrape_table(tbl, filt=None):
+def scrape_table_rows(tbl, filt=None):
     retrows = []
     rows = tbl.find_all('tr')
     if filt:
@@ -78,31 +97,25 @@ def skip_ready_threads(row):
         return False
 
 
-def server_status(password, username, status_url):
+def server_status(status_url, username, password):
     print('calling ' + status_url)
     resp = requests.get(status_url, auth=(username, password))
     body = resp.text
     soup = BeautifulSoup(body)
 
+    # headers are defined as header name (page content) and filter (function)
+    header_defs = {'JVM': None, '"http-bio-8080"': skip_ready_threads}
+
     print
     hdrs = soup.find_all('h1')
+    headertables = {}
     for hdr in hdrs:
-        if hdr.string == 'JVM':
-            print('Found the JVM header!')
+        headername = str(hdr.string)
+        if headername in header_defs:
             tbl = find_named_sibling(hdr, 'table')
             if tbl:
-                print('got a table!')
-                rows = scrape_table(tbl)
-                print('...with ' + str(len(rows)) + ' rows!')
-                for row in rows:
-                    print row
-            
-        elif 'http-bio-8080' in hdr.string:
-            print('Found the http-bio-8080 header!')
-            tbl = find_named_sibling(hdr, 'table')
-            if tbl:
-                print('got a table!')
-                rows = scrape_table(tbl, filt=skip_ready_threads)
-                print('...with ' + str(len(rows)) + ' rows!')           
-                for row in rows:
-                    print row
+                rows = scrape_table_rows(tbl, filt=header_defs[headername])
+                headertables[headername] = rows
+    return headertables
+
+                

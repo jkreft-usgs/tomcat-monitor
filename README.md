@@ -10,7 +10,7 @@ If you do not already have them, make sure you have Python 2.6+, [Requests](http
 
 Determine the servername you want to hit. Formulate it to be complete from protocol to port (if not port 80), e.g. "http://big.damnserver.org:8080"
 
-Determine the username and password by inspecting the target server's conf/tomcat-users.xml file and identifying the user account with the **"manager-script" role.**
+Determine the username and password by inspecting the target server's `conf/tomcat-users.xml` file and identifying the user account with the **"manager-script" role.**
 
 From your repo's root directory, at the commandline, enter 
 
@@ -19,6 +19,30 @@ From your repo's root directory, at the commandline, enter
 Compare the result to the code. You should be able to grasp what's going on.
 
 ### Explanations and background
+
+#### overview: web apps in servlet containers
+
+Monitoring and control/recovery for Java Servlet Container-based web apps is a problem of nested functionality, logic, and access.
+
+At the outermost level is **the server, its OS, its network resources, and usually some kind of external data store.** Most monitoring devices or frameworks can access these pretty well. They can obtain statistics, run diagnostics, and execute recovery measures up to and including hard restarts, depending on permissions and non-extraordinary physical access. We can generally treat this as a solved problem.
+
+The second layer in is **the JVM**. This is a bit more problematic; the JVM is, by design, a sandbox with strictly controlled interactions with the host system. JVM statistics, diagnostics, and control are exercised from within the JVM; you need a Java program to run those operations.
+
+The third layer in is the **Tomcat server/servlet container itself.** It is a Java application, which can self-report all kinds of things.
+
+Finally, the **web app hosted by Tomcat** is a Java app that, again, needs to self-report. Tomcat can give information on the Tomcat-level resources being used by the app, but the application's internal logic is opaque to Tomcat.
+
+#### how this works with that: lowest common denomitator is damn common.
+
+This repo contains examples of, and description of techniques for, handling the second and third layers in a non-invasive, low-effort fashion. It works by taking advantage of Tomcat's built-in Manager application:
+
+ - Becuase it's a web app that ships with Tomcat, it works externally without need for additional installation. You only need to have the necessary permissions.
+
+ - Because it's internal to the JVM, it can provide a pretty good information set about status, and resource usage, for the JVM at large and Tomcat in particular.
+
+ - It does NOT provide any information that depends on the internal logic of the application.
+
+Is the Tomcat Manager the best tool for the job? Well, no, not in absolute quality and usability. But, it is built in, so using it doesn't demand going down the rabbit hole.
 
 The Tomcat server exposes a number of interfaces for monitoring and control via the [Tomcat Manager](http://tomcat.apache.org/tomcat-7.0-doc/manager-howto.html). In a lot of ways, this is excellent. It permits users with proper authorization to deploy, run, shut down, reload, and restart Tomcat applications. It also provides the ability to monitor a lot of the otherwise difficult-to-access internal statistics of apps running in the Tomcat container, and the container itself.
 
@@ -38,7 +62,7 @@ There is one odd and brutal glitch here, though. The Text Interface provides ful
 
  - Text Interface for everything that it _does_ support, and 
 
- - Screen scraping the web page that contains the monitoring info that the Text Interface will not provide.
+ - Screen scraping the `/manager/status` web page that contains the monitoring info that the Text Interface will not provide.
 
 This repo contains examples of doing this in Python. The examples try to be as simple and straightforward as possible. The current incarnation uses `requests` for HTTP client work, and `BeautifulSoup` for the screen scraping.
 
