@@ -32,9 +32,9 @@ The second layer in is **the JVM**. This is a bit more problematic; the JVM is, 
 
 The third layer in is the **Tomcat server/servlet container itself.** It is a Java application, which can self-report all kinds of things.
 
-Finally, the <span style='background-color:#dd7e6bff; font-weight: bold;'>web app hosted by Tomcat</span> is a Java app that, again, needs to self-report. Tomcat can give information on the Tomcat-level resources being used by the app, but the application's internal logic is opaque to Tomcat.
+Finally, the <span style='font-weight: bold;'>web app hosted by Tomcat</span> is a Java app that, again, needs to self-report. Tomcat can give information on the Tomcat-level resources being used by the app, but the application's internal logic is opaque to Tomcat.
 
-#### how this works with that: lowest common denomitator is damn common.
+#### how this works with that: lowest common denominator is damn common.
 
 This repo contains examples of, and description of techniques for, handling the second and third layers in a non-invasive, low-effort fashion. It works by taking advantage of Tomcat's built-in Manager application:
 
