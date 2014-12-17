@@ -44,7 +44,7 @@ This repo contains examples of, and description of techniques for, handling the 
 
  - It does NOT provide any information that depends on the internal logic of the application.
 
-Is the Tomcat Manager the best tool for the job? Well, no, not in absolute quality and usability. It does have big gaps in its rather rudimentary service interface, if such it can be called. There are better things than Tomcat Manager out there. But, Tomcat Manager is **built in**, and **100% HTTP**; so it does not require deployment of additional exotica such as JMX agents or additional Tomcat apps (such as the excellent [PSI Probe](https://code.google.com/p/psi-probe/), so using it doesn't demand going down any rabbit holes.
+Is the Tomcat Manager the best tool for the job? Well, no, not in absolute quality and usability. It does have big gaps in its rather rudimentary service interface, if such it can be called. There are better things than Tomcat Manager out there. But, Tomcat Manager is **built in**, and **100% HTTP**; so it does not require deployment of additional exotica such as JMX agents or additional Tomcat apps (such as the excellent [PSI Probe](https://code.google.com/p/psi-probe/)), so using it doesn't demand going down any rabbit holes.
 
 Look. This is intended to provide a _minimal_, and _minimally adequate_, Tomcat monitoring capability - _at minimal cost and effort_. Given those constraints, Tomcat Manager is still best of breed. 
 
