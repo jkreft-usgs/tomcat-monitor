@@ -42,7 +42,11 @@ This repo contains examples of, and description of techniques for, handling the 
 
  - It does NOT provide any information that depends on the internal logic of the application.
 
-Is the Tomcat Manager the best tool for the job? Well, no, not in absolute quality and usability. But, it is built in, so using it doesn't demand going down the rabbit hole.
+Is the Tomcat Manager the best tool for the job? Well, no, not in absolute quality and usability. It does have big gaps in its rather rudimentary service interface, if such it can be called. There are better things than Tomcat Manager out there. But, Tomcat is built in, and does not require additional exotica such as JMX agents, so using it doesn't demand going down the rabbit hole.
+
+Look. This is intended to provide a _minimal_, and _minimally adequate_, Tomcat monitoring capability - _at minimal cost and effort_. Given those constraints, Tomcat Manager is still best of breed. 
+
+#### Tomcat Manager
 
 The Tomcat server exposes a number of interfaces for monitoring and control via the [Tomcat Manager](http://tomcat.apache.org/tomcat-7.0-doc/manager-howto.html). In a lot of ways, this is excellent. It permits users with proper authorization to deploy, run, shut down, reload, and restart Tomcat applications. It also provides the ability to monitor a lot of the otherwise difficult-to-access internal statistics of apps running in the Tomcat container, and the container itself.
 
