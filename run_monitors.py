@@ -2,14 +2,20 @@ import sys
 import urlparse
 from tomcat_monitor import list_processes, server_info, jndi_resources, server_status
 
-usage = '''This script takes three parameters:
+usage = 
+    '''
+    (for simple initial testing before monitors are properly written as Nagios plugins)
+    This script takes three parameters:
     - server, which is the entire server URL beginning with "http://" 
         and including port number as necessary
-    - username, which is the user account privileged to access Tomcat MAnager text and status
+    - username, which is the user account privileged to access Tomcat Manager
+        text and status
     - password for that account.
 
-    See conf/tomcat-users.xml on the target server; the role should be "manager-script".
-'''
+    See conf/tomcat-users.xml on the target server; the role should be 
+    "manager-script" or "manager-status", depending on what's being accessed.
+    '''
+
 
 if len(sys.argv) < 4:
     print('Only ' + str(len(sys.argv)) + ' parameters passed.')
@@ -40,5 +46,5 @@ print
 print
 
 # this block requires tomcat-status privileges
-headertables = server_status(status_url, username, password)
-print(headertables)
+#headertables = server_status(status_url, username, password)
+#print(headertables)
