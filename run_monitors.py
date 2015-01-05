@@ -27,6 +27,7 @@ status_url = manager_url + '/status'
 print('Tomcat Manager Status Page URL: ' + status_url)
 
 print
+# these blocks require tomcat-script privileges
 #print(server_info(text_url, username, password))
 #print(jndi_resources(text_url, username, password))
 
@@ -37,5 +38,7 @@ print
         #print('\t' + keyname + ': ' + str(proc_dict[context][keyname]))
     
 print
+
+# this block requires tomcat-status privileges
 headertables = server_status(status_url, username, password)
 print(headertables)

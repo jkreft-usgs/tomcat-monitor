@@ -66,6 +66,10 @@ def jndi_resources(text_url, username, password):
 
 
 def find_named_sibling(tag, desired_name, how_many_tries=5):
+    '''
+    Convenience method. Given a BeautifulSoup tag, finds the first occurrence
+    of the desired_name in a sibling tag. Will look for up to how_many_tries.
+    '''
     sib = tag
     for indx in range(how_many_tries):
         if sib.next_sibling:
