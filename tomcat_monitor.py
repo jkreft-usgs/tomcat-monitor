@@ -83,8 +83,10 @@ def find_named_sibling(tag, desired_name, how_many_tries=5):
 def scrape_table_rows(tbl, filt=None):
     '''
     Walks through the rows of a table. If a given row is not eliminated
-    by filter function, the row is converted into a list of string values
-    of the th or td tags in the row.
+    by filter function 'filt', the row is converted into a list of string
+    values of the th or td tags in the row.
+
+    The 'filt' function must return True if the row is desired, else False.
     '''
     retrows = []
     rows = tbl.find_all('tr')
@@ -134,5 +136,3 @@ def server_status(status_url, username, password):
                 rows = scrape_table_rows(tbl, filt=header_defs[headername])
                 headertables[headername] = rows
     return headertables
-
-                

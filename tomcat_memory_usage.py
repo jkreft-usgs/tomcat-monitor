@@ -1,5 +1,86 @@
-from tomcat_monitor import server_status
+#from tomcat_monitor import server_status
 import sys
+
+#==================== Rude HACK to get everything working
+
+def find_named_sibling(tag, desired_name, how_many_tries=5):
+    '''
+    Convenience method. Given a BeautifulSoup tag, finds the first occurrence
+    of the desired_name in a sibling tag. Will look for up to how_many_tries.
+    '''
+    sib = tag
+    for indx in range(how_many_tries):
+        if sib.next_sibling:
+            sib = sib.next_sibling
+            if sib.name == desired_name:
+                return sib
+        else:
+            print('Out of siblings at ' + str(indx) + '. wtf.')
+            return None
+
+def scrape_table_rows(tbl, filt=None):
+    '''
+    Walks through the rows of a table. If a given row is not eliminated
+    by filter function 'filt', the row is converted into a list of string
+    values of the th or td tags in the row.
+
+    The 'filt' function must return True if the row is desired, else False.
+    '''
+    retrows = []
+    rows = tbl.find_all('tr')
+    if filt:
+        rows = [row for row in rows if filt(row)]
+    for row in rows:
+        retrows.append([str(cell.string) for cell in row.find_all(['td', 'th'])])
+    return retrows
+
+def skip_ready_threads(row):
+    '''
+    Filter method: returns True IFF the parameter has a first cell that does
+    not contain the string value "R". Intended to eliminate thread table
+    rows that are in "Ready" state (i.e., not working.)
+    :param row: A beautiful soup tag for an HTML row
+    :returns: False if the parameter is None, has no first cell, or has a 
+        first cell with string value "R"; else True
+    '''
+    if row:
+        firstcell = row.find(['th', 'td'])
+        if firstcell:
+            firstcontent = firstcell.string
+            return firstcontent != 'R'
+        else:
+            return False
+    else:
+        return False
+
+
+
+import requests
+from bs4 import BeautifulSoup
+
+def server_status(status_url, username, password):
+    resp = requests.get(status_url, auth=(username, password))
+    resp.raise_for_status()
+
+    #scrape the HTML
+    soup = BeautifulSoup(resp.text)
+
+    # html headers are defined as header name (page content) and filter (function)
+    header_defs = {'JVM': None, '"http-bio-8080"': skip_ready_threads}
+
+    hdrs = soup.find_all('h1')
+    headertables = {}
+    for hdr in hdrs:
+        headername = str(hdr.string)
+        if headername in header_defs:
+            tbl = find_named_sibling(hdr, 'table')
+            if tbl:
+                rows = scrape_table_rows(tbl, filt=header_defs[headername])
+                headertables[headername] = rows
+    return headertables
+
+#======================== end of rude HACK
+
 
 usage = '''
 This plugin requires the following parameters:
@@ -53,6 +134,7 @@ if len(sys.argv) == 6:
     alert_levels['warning'] = warning
     alert_levels['critical'] = critical
         
+
 if len(sys.argv) == 5 or len(sys.argv) > 6:
     print(usage)
     exit(status['unknown'])
