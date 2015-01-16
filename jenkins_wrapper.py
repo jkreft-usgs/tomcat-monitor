@@ -43,8 +43,40 @@ servers = (
 
 operations = (
     'memory_usage',
-    'reload'
+    'reload',
+    'check_with_recovery'
 )
+
+# wqp contexts to reload in case of trouble
+usual_suspects = (
+    '/storetqw-codes', 
+    '/stewardsqw', 
+    '/wqp-aggregator', 
+    '/storetqw', 
+    '/nwisqw', 
+    '/nwisqw-codes'
+)
+
+def reload_usual_suspects(server_url):
+    text_url = os.path.join(server_url, 'manager/text')
+    print('text_url = "' + text_url + '"')
+    processes = list_processes(text_url, username, password)
+    print('running: ' + str(processes))
+    # convert unicode keys to list of strings
+    contexts = [str(keyname) for keyname in processes if processes[keyname]['running']]
+    # the usual suspects are the ones that might need reloading
+    contexts_to_reload = [context for context in contexts if context in usual_suspects]
+    print('RELOADING THESE:')
+    context_string = ','.join(contexts_to_reload)
+    print(context_string)
+    script = os.path.join(os.getcwd(), 'reload-tomcat.py')
+    params = ['python', script, server_url, context_string, username, password]
+    try:
+        print('calling: ' + str(params))
+        exit_status = subprocess.call(params)
+    except Exception as ex:
+        print(ex)
+        exit(status['unknown'])
 
 # sanity checks
 if len(sys.argv) < 5 or len(sys.argv) > 6:
@@ -62,7 +94,7 @@ if sys.argv[2] not in operations:
 warning = 0
 critical = 0
 if len(sys.argv) == 6:
-    # there's a warning_critical threshold
+    # there's a warning_critical threshold override
     thresholds = sys.argv[5].split(',')
     if len(thresholds) != 2:
         print('"' + sys.argv[5] + '" is not a valid warning_threshold pair.')
@@ -76,6 +108,7 @@ if len(sys.argv) == 6:
         
     if warning < 1 or critical > 100 or warning > critical:
         print('warning_critical number values (' + str(warning) + ',' + str(critical) + ') are wrong.')
+        exit(status['unknown'])
     
 # rename/refactor parameters for clarity
 server_url = 'http://cida-eros-' + sys.argv[1] + ':8080'
@@ -103,32 +136,7 @@ if operation == 'memory_usage':
 
 elif operation == 'reload':
     print('reloading processes on "' + server_url + '".')
-    text_url = os.path.join(server_url, 'manager/text')
-    print('text_url = "' + text_url + '"')
-    processes = list_processes(text_url, username, password)
-    print('running: ' + str(processes))
-    # convert unicode keys to list of strings
-    contexts = [str(keyname) for keyname in processes if processes[keyname]['running']]
-    # the usual suspects are the ones that might need reloading
-    usual_suspects = [
-        '/storetqw-codes', 
-        '/stewardsqw', 
-        '/wqp-aggregator', 
-        '/storetqw', 
-        '/nwisqw', 
-        '/nwisqw-codes']
-    contexts_to_reload = [context for context in contexts if context in usual_suspects]
-    print('RELOADING THESE:')
-    context_string = ','.join(contexts_to_reload)
-    print(context_string)
-    script = os.path.join(os.getcwd(), 'reload-tomcat.py')
-    params = ['python', script, server_url, context_string, username, password]
-    try:
-        print('calling: ' + str(params))
-        exit_status = subprocess.call(params)
-    except Exception as ex:
-        print(ex)
-        exit(status['unknown'])
+    reload_usual_suspects(server_url)
         
         
     
