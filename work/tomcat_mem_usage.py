@@ -87,7 +87,7 @@ def server_status(status_url, username, password):
 
 usage = '''
 This plugin requires the following parameters:
- - hostname (e.g. "big.old.server.org")
+ - hostname (e.g. "big.old.server.some.rg")
  - port (e.g. "8080")
  - tomcat_manager_status_username
  - password
@@ -110,20 +110,20 @@ alert_levels['warning'] = 80
 alert_levels['critical'] = 90
 
 # resolve params
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
     print(usage)
     exit(status['unknown'])
 
-server_url = sys.argv[1]
+server_url = 'http://' + sys.argv[1] + ':' + sys.argv[2]
 status_url = server_url + '/manager/status/'
-username = sys.argv[2]
-password = sys.argv[3]
+username = sys.argv[3]
+password = sys.argv[4]
 
-if len(sys.argv) == 6:
+if len(sys.argv) == 7:
     # warning and critical values
     try:
-        warning = int(sys.argv[4])
-        critical = int(sys.argv[5])
+        warning = int(sys.argv[5])
+        critical = int(sys.argv[6])
     except Exception as ex:
         print('improper warning and/or critical alert values: ' + str(ex))
         exit(status['unknown'])
@@ -139,7 +139,8 @@ if len(sys.argv) == 6:
     alert_levels['critical'] = critical
         
 
-if len(sys.argv) == 5 or len(sys.argv) > 6:
+if len(sys.argv) == 6 or len(sys.argv) > 7:
+    print ('arguments: ' + str(sys.argv))
     print(usage)
     exit(status['unknown'])
 
