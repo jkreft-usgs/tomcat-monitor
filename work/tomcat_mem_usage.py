@@ -1,7 +1,9 @@
 #from tomcat_monitor import server_status
 import sys
 
-#==================== Rude HACK to get everything working
+#==================== Rude HACK to get everything working (copied necessary
+#                       stuff from "tomcat_monitor.py" to avoid issues of import
+#                       in nagios context)
 
 def find_named_sibling(tag, desired_name, how_many_tries=5):
     '''
@@ -15,12 +17,12 @@ def find_named_sibling(tag, desired_name, how_many_tries=5):
             if sib.name == desired_name:
                 return sib
         else:
-            print('Out of siblings at ' + str(indx) + '. wtf.')
+            # print('Out of siblings at ' + str(indx) + '. wtf.')
             return None
 
 def scrape_table_rows(tbl, filt=None):
     '''
-    Walks through the rows of a table. If a given row is not eliminated
+    Walks through the rows of an HTML table. If a given row is not eliminated
     by filter function 'filt', the row is converted into a list of string
     values of the th or td tags in the row.
 
@@ -60,6 +62,7 @@ from bs4 import BeautifulSoup
 
 def server_status(status_url, username, password):
     resp = requests.get(status_url, auth=(username, password))
+    # raise an Exception if HTTP status code indicates error (4xx or 5xx)
     resp.raise_for_status()
 
     #scrape the HTML
@@ -84,12 +87,13 @@ def server_status(status_url, username, password):
 
 usage = '''
 This plugin requires the following parameters:
-server (including protocol and port, e.g. "http://big.old.server.org:8080")
-tomcat_manager_status_username
-password
+ - hostname (e.g. "big.old.server.org")
+ - port (e.g. "8080")
+ - tomcat_manager_status_username
+ - password
 (optional: both required if either is present; these are percentages)
-warning (must be a number > 0) (default 80)
-critical (must be a number > warning and < 100) (default 90)
+ - warning (must be a number > 0) (default 80)
+ - critical (must be a number > warning and < 100) (default 90)
 '''
 
 # return status values
@@ -155,20 +159,22 @@ memory_table = status_tables['JVM']
 # basic sanity check
 for row in memory_table:
     if len(row) != 6:
-        print('Malformed table row: ' + str(row))
+        print('Malformed status table row: ' + str(row))
         exit(status['unknown'])
 
-#CMS Old Gen
-#Par Eden Space
-#Par Survivor Space
-#CMS Perm Gen
-#Code Cache
+# The JVM memory space is divided up into "pools":
+#  - CMS Old Gen
+#  - Par Eden Space
+#  - Par Survivor Space
+#  - CMS Perm Gen
+#  - Code Cache
 
 pool_percentages = {}
 
-# skip headers, read data rows
 worst = 'ok'
+# skip headers, read data rows
 for row in memory_table[1:]:
+    # row[x] will be a column.
     memory_pool = row[0]
     pool_percentages[memory_pool] = []
     percent = row[5] 
@@ -194,6 +200,6 @@ for row in memory_table[1:]:
 
 print(str(pool_percentages))
 
-print('worst: ' + worst)
+#print('worst: ' + worst)
 
 exit(status[worst])
