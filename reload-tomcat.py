@@ -16,16 +16,6 @@ context_to_reload (the context path or paths to reload;
 
 '''
 
-# Usual suspects for WQP contexts:
-usual_suspects = '''
-/wqp-aggregator,
-/nwisqw,
-/nwisqw-codes,
-/storetqw,
-/storetqw-codes,
-/stewardsqw
-'''
-
 
 # return status values
 status = {}
