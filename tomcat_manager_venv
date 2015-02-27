@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# better names for parameters
+
+# plugin to execute (local filename, not Nagios plugin identifier)
+PLUGIN_TO_EXECUTE=$1
+# Nagios virtualenv base directory (initially established by "virtualenv" command)
+NAGIOS_VENV_DIR=$2
+HOST=$3
+PORT=$4
+USERNAME=$5
+PASSWORD=$6
+# warn,crit. use 'none' if not required
+WARNCRITLEVEL=$7
+# plugin-specific comma-delimited parameter string. use 'none' if not required
+SPECIFIC=$8 
+
+# virtualenv: activate the nagios virtualenv
+. $NAGIOS_VENV_DIR/bin/activate
+
+# what's this script's directory? (WARNING: can break if current dir reached via symlink)
+SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+# ASSUMPTION: the Python plugin script is colocated in $SCRIPT_DIR
+python $SCRIPT_DIR/$PLUGIN_TO_EXECUTE $HOST $PORT $USERNAME $PASSWORD $WARNCRITLEVEL $SPECIFIC 
+# capture the python script's exit status 
+STATUS_CODE=$?
+
+# virtualenv: deactivate the nagios virtualenv
+# (note: "deactivate" is a shell function set up by the "activate" script. 
+# It is an in-memory command alias, NOT a file.)
+deactivate
+
+exit $STATUS_CODE

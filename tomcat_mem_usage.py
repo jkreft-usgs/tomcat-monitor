@@ -82,6 +82,29 @@ def server_status(status_url, username, password):
                 headertables[headername] = rows
     return headertables
 
+def warn_crit(warncrit):
+    '''This function expects an integer pair string "w,c" such that 0 < w < c < 100.
+    If the w and c values are valid, they will be returned as the integer tuple (w,c).
+    If the values of w and c are invalid, it will raise a ValueError
+    If it's not a string containing a single comma, it is treated as a 
+    non-parameter and the returned val is None.
+    '''
+    retval = None
+    if warncrit:
+        warncrit = warncrit.split(',')
+        if len(warncrit) == 2:
+            retval = (int(warncrit[0]), int(warncrit[1]))
+            if warncrit[0] <= 0 or warncrit[1] < 0:
+                errmsg = 'warning and critical percentages must be positive. Passed: ' 
+                errmsg += '(' + str(warncrit[0]) + ', ' + str(warncrit[1]) + ')'
+                raise ValueError(errmsg)
+            if warncrit[0] >= warncrit[1]:
+                errmsg = 'warning value (passed as ' + str(warncrit[0]) 
+                errmsg += ') must be less than critical value (passed as '  
+                errmsg +=  str(warncrit[1]) + ').'
+                raise ValueError(errmsg)
+    return retval
+
 #======================== end of rude HACK
 
 
@@ -91,10 +114,8 @@ This plugin requires the following parameters:
  - port (e.g. "8080")
  - tomcat_manager_status_username
  - password
-(optional: both required if either is present; these are percentages)
- - warning (must be a number > 0) (default 80)
- - critical (must be a number > warning and < 100) (default 90)
-'''
+ - warning_crit_threshold (must be form 'w,c'; integer vae,ues 0 < w < c < 100, else Python False, None, empty, etc)
+ '''
 
 # return status values
 status = {}
@@ -110,7 +131,7 @@ alert_levels['warning'] = 80
 alert_levels['critical'] = 90
 
 # resolve params
-if len(sys.argv) < 4:
+if len(sys.argv) < 5:
     print(usage)
     exit(status['unknown'])
 
@@ -119,27 +140,24 @@ status_url = server_url + '/manager/status/'
 username = sys.argv[3]
 password = sys.argv[4]
 
-if len(sys.argv) == 7:
+if len(sys.argv) >= 6:
     # warning and critical values
+    warncrit = []
     try:
-        warning = int(sys.argv[5])
-        critical = int(sys.argv[6])
+        warncrit = warn_crit(sys.argv[5])
+        # if not of the form 'w,c' the returned value will be None
     except Exception as ex:
+        # puked on integer parse or manual ValueError condition
         print('improper warning and/or critical alert values: ' + str(ex))
         exit(status['unknown'])
-    if warning < 0 or critical < 0:
-        print('warning and critical percentages must be positive. Passed: ' + str(warning) + ', ' + str(critical))
-        exit(status['unknown'])
-    if warning >= critical:
-        print('warning value (passed as ' + str(warning) + ') must be less than critical value (passed as ' + str(critical) + ').')
-        exit(status['unknown'])
-
-    # looks like these values are all right
-    alert_levels['warning'] = warning
-    alert_levels['critical'] = critical
+    if warncrit:
+        # looks like these override values are all right
+        alert_levels['warning'] = warncrit[0]
+        alert_levels['critical'] = warncrit[1]
+ 
         
-
-if len(sys.argv) == 6 or len(sys.argv) > 7:
+if len(sys.argv) < 5:
+    # not enough args
     print ('arguments: ' + str(sys.argv))
     print(usage)
     exit(status['unknown'])
@@ -199,8 +217,15 @@ for row in memory_table[1:]:
         print('Unable to determine ' + memory_pool + ' memory percentage: ' + str(ex))
         exit(status['unknown'])
 
-print(str(pool_percentages))
+worst_percentage = sorted(pool_percentages.values(), reverse=True)[0]
+baddest_pools = []
+for pool in pool_percentages:
+    if pool_percentages[pool] == worst_percentage:
+        baddest_pools.append(pool)
 
-#print('worst: ' + worst)
+output_msg = 'Check complete. Overall status is ' + worst + '. Max: ' + str(worst_percentage) + ': ' + str(baddest_pools) + '.'
+performance_data = str(pool_percentages)
+
+print('|'.join((output_msg, performance_data)))
 
 exit(status[worst])

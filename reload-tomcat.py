@@ -3,15 +3,29 @@ import sys
 
 usage = '''
 This plugin requires the following parameters:
-server (including protocol and port, e.g. "http://big.old.server.org:8080")
+server (e.g. "big.old.server.some.org")
+port (e.g. "8080")
+tomcat_manager_text_username
+password
+warning_crit_threshold (should be "none")
 context_to_reload (the context path or paths to reload;
     - this parameter contains NO spaces
     - multiple values are comma-separated
     - each path must begin with "/"
     - each path must correspond to a valid context path for the Tomcat instance.)
-tomcat_manager_text_username
-password
+
 '''
+
+# Usual suspects for WQP contexts:
+usual_suspects = '''
+/wqp-aggregator,
+/nwisqw,
+/nwisqw-codes,
+/storetqw,
+/storetqw-codes,
+/stewardsqw
+'''
+
 
 # return status values
 status = {}
@@ -22,16 +36,16 @@ status['unknown'] = 3
 
 
 # resolve params
-if len(sys.argv) != 5:
+if len(sys.argv) != 7:
     print(usage)
     exit(status['unknown'])
     
-server_url = sys.argv[1]
+server_url = 'http://' + sys.argv[1] + ':' + sys.argv[2]
 text_url = server_url + '/manager/text'
 reload_url = text_url + '/reload'
-contexts = sys.argv[2].split(',')
 username = sys.argv[3]
 password = sys.argv[4]
+contexts = sys.argv[6].split(',')
 
 print('Reloading ' + server_url + ' contexts ' + str(contexts) + '.')
 
@@ -53,9 +67,3 @@ for context in contexts:
     except Exception as ex:
         print(str(ex) + ' occurred while attempting to reload "' + context + '".')
         exit(status['unknown'])
-
-
-
-
-
-
